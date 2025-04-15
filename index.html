@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fale com seu treinador virtual</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+  />
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: #121212; /* matte black */
+      color: #e0e0e0; /* light gray for text */
+    }
+    .highlight-blue {
+      color: #1e40af; /* royal blue */
+    }
+    .btn-blue {
+      background-color: #1e40af;
+    }
+    .btn-blue:hover {
+      background-color: #2563eb; /* electric blue */
+    }
+    /* Scrollbar for chat */
+    #chat-messages {
+      scrollbar-width: thin;
+      scrollbar-color: #1e40af #1f2937;
+    }
+    #chat-messages::-webkit-scrollbar {
+      width: 8px;
+    }
+    #chat-messages::-webkit-scrollbar-track {
+      background: #1f2937;
+    }
+    #chat-messages::-webkit-scrollbar-thumb {
+      background-color: #1e40af;
+      border-radius: 10px;
+      border: 2px solid #1f2937;
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <main class="flex-grow container mx-auto px-6 py-12 flex flex-col items-center text-center">
+    <h1 class="text-4xl md:text-5xl font-extrabold mb-4 highlight-blue">Fale com seu treinador virtual</h1>
+    <p class="text-lg md:text-xl mb-8 max-w-xl">
+      Tire suas dúvidas sobre musculação e nutrição com um assistente inteligente
+    </p>
+    <button
+      id="open-chat-btn"
+      class="btn-blue text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-colors duration-300"
+      aria-label="Iniciar conversa"
+    >
+      Iniciar conversa
+    </button>
+
+    <section class="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-12 max-w-4xl w-full">
+      <div class="flex flex-col items-center space-y-4">
+        <i class="fas fa-dumbbell fa-3x highlight-blue"></i>
+        <h3 class="text-xl font-semibold">Dicas de treino</h3>
+      </div>
+      <div class="flex flex-col items-center space-y-4">
+        <i class="fas fa-apple-alt fa-3x highlight-blue"></i>
+        <h3 class="text-xl font-semibold">Planejamento alimentar</h3>
+      </div>
+      <div class="flex flex-col items-center space-y-4">
+        <i class="fas fa-headset fa-3x highlight-blue"></i>
+        <h3 class="text-xl font-semibold">Apoio 24/7</h3>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-gray-900 text-gray-500 text-center py-4 text-sm">
+    Powered by ChatGPT – Treine com inteligência.
+  </footer>
+
+  <!-- Chat Modal -->
+  <div
+    id="chat-modal"
+    class="fixed inset-0 bg-black bg-opacity-80 flex flex-col justify-center items-center p-4 hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="chat-title"
+  >
+    <div class="bg-gray-900 rounded-lg shadow-lg w-full max-w-lg flex flex-col max-h-[80vh]">
+      <header class="flex justify-between items-center p-4 border-b border-gray-700">
+        <h2 id="chat-title" class="text-xl font-bold highlight-blue">Treinador Virtual</h2>
+        <button
+          id="close-chat-btn"
+          aria-label="Fechar chat"
+          class="text-gray-400 hover:text-white transition"
+        >
+          <i class="fas fa-times fa-lg"></i>
+        </button>
+      </header>
+      <div
+        id="chat-messages"
+        class="flex-grow overflow-y-auto p-4 space-y-4 text-left text-gray-200"
+      ></div>
+      <form id="chat-form" class="p-4 border-t border-gray-700 flex space-x-2">
+        <input
+          id="chat-input"
+          type="text"
+          placeholder="Digite sua pergunta sobre treino ou nutrição..."
+          class="flex-grow rounded-md bg-gray-800 border border-gray-700 px-4 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+          autocomplete="off"
+          required
+          aria-label="Digite sua pergunta"
+        />
+        <button
+          type="submit"
+          class="btn-blue text-white font-bold px-6 rounded-md hover:bg-blue-700 transition"
+          aria-label="Enviar pergunta"
+        >
+          Enviar
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const openChatBtn = document.getElementById('open-chat-btn');
+    const closeChatBtn = document.getElementById('close-chat-btn');
+    const chatModal = document.getElementById('chat-modal');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+
+    // Keywords for allowed topics
+    const allowedKeywords = [
+      'treino',
+      'musculação',
+      'academia',
+      'nutrição',
+      'nutricao',
+      'alimentação',
+      'alimentacao',
+      'dieta',
+      'exercício',
+      'exercicio',
+      'suplemento',
+      'suplementos',
+      'fitness',
+      'workout',
+      'training',
+      'protein',
+      'calorias',
+      'calorie',
+      'carboidrato',
+      'carbohydrate',
+      'hidratação',
+      'hidratacao',
+      'força',
+      'forca',
+      'resistência',
+      'resistencia',
+      'cardio',
+      'alongamento',
+      'alongar',
+      'repetição',
+      'repeticao',
+      'descanso',
+      'repouso',
+      'massa muscular',
+      'hipertrofia',
+      'performance',
+      'energia',
+      'vitamina',
+      'minerais',
+      'macro',
+      'micronutrientes',
+      'proteína',
+      'proteina'
+    ];
+
+    function isAllowedQuestion(text) {
+      const lowerText = text.toLowerCase();
+      return allowedKeywords.some(keyword => lowerText.includes(keyword));
+    }
+
+    function appendMessage(sender, text) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = sender === 'user' ? 'text-right' : 'text-left';
+      const bubble = document.createElement('div');
+      bubble.className =
+        sender === 'user'
+          ? 'inline-block bg-blue-700 text-white rounded-lg px-4 py-2 max-w-xs'
+          : 'inline-block bg-gray-700 text-gray-200 rounded-lg px-4 py-2 max-w-xs';
+      bubble.textContent = text;
+      messageDiv.appendChild(bubble);
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function getChatResponse(question) {
+      if (!isAllowedQuestion(question)) {
+        return 'Desculpe, posso te ajudar apenas com dúvidas sobre treinos e nutrição. 💪';
+      }
+      // Simulated responses for demo purposes
+      const lowerQuestion = question.toLowerCase();
+      if (lowerQuestion.includes('treino') || lowerQuestion.includes('musculação') || lowerQuestion.includes('academia')) {
+        return 'Para um treino eficiente, foque em exercícios compostos e mantenha uma rotina consistente.';
+      }
+      if (lowerQuestion.includes('nutrição') || lowerQuestion.includes('alimentação') || lowerQuestion.includes('dieta')) {
+        return 'Uma alimentação balanceada com proteínas, carboidratos e gorduras saudáveis é essencial para bons resultados.';
+      }
+      return 'Essa é uma ótima pergunta! Continue focando nos seus objetivos.';
+    }
+
+    openChatBtn.addEventListener('click', () => {
+      chatModal.classList.remove('hidden');
+      chatInput.focus();
+    });
+
+    closeChatBtn.addEventListener('click', () => {
+      chatModal.classList.add('hidden');
+      chatMessages.innerHTML = '';
+      chatInput.value = '';
+    });
+
+    chatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const userInput = chatInput.value.trim();
+      if (!userInput) return;
+      appendMessage('user', userInput);
+      chatInput.value = '';
+      setTimeout(() => {
+        const response = getChatResponse(userInput);
+        appendMessage('bot', response);
+      }, 800);
+    });
+  </script>
+</body>
+</html>
